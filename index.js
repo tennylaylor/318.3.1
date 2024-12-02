@@ -1,9 +1,9 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 
-const users = require("./routes/users");
-const posts = require("./routes/posts");
-
+const users = require("./routes/api/users");
+const posts = require("./routes/api/posts");
+const comments = require("./routes/api/comments");
 const error = require("./utilities/error");
 
 const app = express();
@@ -42,7 +42,7 @@ app.use("/api", function (req, res, next) {
   var key = req.query["api-key"];
 
   // Check for the absence of a key.
-  if (!key) next(error(400, "hJAsknw-L198sAJD-l3kasx"));
+  if (!key) next(error(400, "API Key Required"));
 
   // Check for key validity.
   if (apiKeys.indexOf(key) === -1) next(error(401, "Invalid API Key"));
@@ -55,6 +55,7 @@ app.use("/api", function (req, res, next) {
 // Use our Routes
 app.use("/api/users", users);
 app.use("/api/posts", posts);
+app.use("/api/comments", comments);
 
 // Adding some HATEOAS links.
 app.get("/", (req, res) => {
@@ -110,6 +111,10 @@ app.use((req, res, next) => {
 // but allows us to change the processing of ALL errors
 // at once in a single location, which is important for
 // scalability and maintainability.
+
+// Routes
+app.use("/api/posts", require("./routes/api/posts")); // Connect posts routes
+
 app.use((err, req, res, next) => {
   res.status(err.status || 500);
   res.json({ error: err.message });
